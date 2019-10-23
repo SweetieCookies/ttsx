@@ -1,0 +1,62 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    <bean id="myRealm" class="com.zf.realm.MyRealm">
+    <property name="userService" ref="userServiceImpl"/>
+        <!-- 密码比对器 -->
+        <property name="credentialsMatcher">
+            <bean class="org.apache.shiro.authc.credential.HashedCredentialsMatcher">
+                <property name="hashAlgorithmName" value="SHA-256"/>
+                <!-- true means hex encoded, false means base64 encoded -->
+                <property name="storedCredentialsHexEncoded" value="false"/>
+                <property name="hashIterations" value="10000"/>
+            </bean>
+        </property>
+    </bean>
+    <!-- 声明SecurityManager -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="myRealm"/>
+     <!--   &lt;!&ndash; 注册缓存管理器 &ndash;&gt;
+        <property name="cacheManager" ref="cacheManager"/>
+        &lt;!&ndash; 注册session管理器 &ndash;&gt;
+        <property name="sessionManager" ref="sessionManager"/>-->
+    </bean>
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+    <!-- 注入核心对象 -->
+    <property name="securityManager" ref="securityManager"/>
+    </bean>
+    <!-- SessionManager,使用Shiro的DefaultWebSessionManager即可，其中注入自定义的SessionDAO -->
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+
+    </bean>
+    <!--    记住我的Cookie-->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!--   rememberMe时cookie之中的key,value是用户名的密文
+                   cookie["rememberMe":"deleteMe"] 此cookie每次登录后都会写出,用于清除之前的cookie
+                   cookie["rememberMe":"username的密文"] 此cookie也会在登录后写出,用于记录最新的username
+                   (ops:如上设计,既能保证每次登录后重新记录cookie,也能保证切换账号时,记录最新账号)
+           -->
+        <property name="name" value="rememberMe"/>
+        <!--       cookie只在http请求中可用,那么通过js脚本将无法读取到cookie信息,有效防止cookie被窃取 -->
+        <property name="httpOnly" value="true"/>
+        <!--        7天-->
+        <property name="maxAge" value="604800"/>
+
+    </bean>
+    <!--        记住我管理器-->
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+    <!-- 增加session管理相关配置 -->
+    <!--    会话Cookie模板  ,默认可省-->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!--Cookie的 key="sid"-->
+        <property name="name" value="JSESSIONID01"/>
+        <!--     只允许http请求访问cookie   -->
+        <property name="httpOnly" value="true"/>
+        <!-- cookie过期时间，-1:存活一个会话 ,单位:秒 ，默认为-1-->
+        <property name="maxAge" value="-1"/>
+    </bean>
+
+</beans>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zf.dao.UserDao">
+    <insert id="add" parameterType="User">
+        insert into t_user (username,password,email,registertime,salt)
+        values (#{username},#{password},#{email},#{registerTime},#{salt})
+    </insert>
+    <select id="findBy" resultType="User">
+        select * from t_user
+        <where>
+            <if test='"username!=null"'>
+                And username=#{username}
+            </if>
+            <if test='"email!=null"'>
+                and  email=#{email}
+            </if>
+        </where>
+    </select>
+    <select id="findByName" resultType="User">
+        select *from t_user where username=#{username}
+    </select>
+    <select id="findByEmail" resultType="User">
+        select *from t_user where email=#{email}
+    </select>
+</mapper>

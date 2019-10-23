@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    dtd : document type definition    xxx.dtd  xxx2.dtd
+    xsd : xml schema definition       xxx.xsd  xxx2.xsd
+    文档约束：标签，顺序，层级，属性
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+			               http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd ">
+
+    <!--  数据连接信息-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!-- 连接池-->
+    <bean id="druid" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <!-- 基本属性 url、user、password -->
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="${jdbc.initialSize}"/>
+        <property name="minIdle" value="${jdbc.minIdle}"/>
+        <property name="maxActive" value="${jdbc.maxActive}"/>
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="${jdbc.maxWait}"/>
+
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}"/>
+
+        <!-- 配置一个连接在池中最小空闲的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="${jdbc.minEvictableIdleTimeMillis}"/>
+
+        <property name="validationQuery" value="${jdbc.validationQuery}"/>
+        <property name="testWhileIdle" value="${jdbc.testWhileIdle}"/>
+        <property name="testOnBorrow" value="${jdbc.testOnBorrow}"/>
+        <property name="testOnReturn" value="${jdbc.testOnReturn}"/>
+    </bean>
+    <!-- sqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 导入连接池   -->
+        <property name="dataSource" ref="druid"/>
+        <!-- 映射文件位置   -->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+        <!--配置缺省包  -->
+        <property name="typeAliasesPackage" value="com.zf.pojo"/>
+    </bean>
+    <!-- MapperScannerConfigurer
+      1. 找到所有DAO接口
+      2. 并根据SqlSessionFactory的支持，创建出DAO实现类的对象
+      3. 将对象纳入工厂，且id=首字母小写的接口类名
+  -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- Dao接口位置 -->
+        <property name="basePackage" value="com.zf.dao"/>
+        <!-- sqlsessionfactory  -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+    <!--以下是service配置-->
+    <!-- 配置注解扫描：让spring去发现注解，进而实现对应的功能 -->
+    <context:component-scan base-package="com.zf">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+<!-- 声明事务管理器 -->
+    <bean id="tx" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="druid"></property>
+    </bean>
+    <tx:annotation-driven transaction-manager="tx"/>
+    <import resource="classpath:shiro.xml"/>
+</beans>

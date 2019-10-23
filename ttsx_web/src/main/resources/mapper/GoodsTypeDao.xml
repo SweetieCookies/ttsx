@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zf.dao.GoodsTypeDao">
+<resultMap id="map" type="GoodsType">
+<id property="id" column="id"/>
+    <result property="title" column="title" />
+    <result property="className" column="className" />
+    <result property="bannerPath" column="bannerPath" />
+    <result property="createTime" column="createTime" />
+    <collection property="goods" javaType="list" ofType="Goods">
+        <id property="id" column="id"/>
+    </collection>
+</resultMap>
+    <select id="findAll" resultType="GoodsType">
+        select * from t_goodstype
+    </select>
+    <select id="findById" resultType="GoodsType">
+        select t_goodsType.id,
+        t_goodsType.title,
+        t_goodsType.bannerPath,
+        t_goods.id,
+        t_goods.title,
+        t_goods.imgPath,
+        t_goods.bannerPath,
+        t_goods.price,
+        t_goods.detail
+         from t_goodsType ,t_goods where  t_goodsType.id=t_goods.typeId order by t_goods.createTime limit 4
+    </select>
+</mapper>
